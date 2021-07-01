@@ -8,15 +8,20 @@
   <link rel="dns-prefetch" href="http://example.com">
   <title>Linux系统及指令 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="article">
+  <meta name="description" content="Linux是一个开源、免费的操作系统，其稳定性、安全性、处理多并发已经得到业界的认可。目前很多企业记得项目都会部署到Linux&#x2F;Unix系统上。  Linux系统CPU利用率和负载CPU利用率现实的是程序在运行期间实时占用的CPU百分比；CPU使用率反映的是当前CPU的繁忙程度，忽高忽低的原因在于占用CPU处理事件的进程可能处于I&#x2F;O等待状态却还未释放进入wait。 CPU负载是指某段时间内占用">
+<meta property="og:type" content="article">
 <meta property="og:title" content="Linux系统及指令">
 <meta property="og:url" content="http://example.com/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Linux是一个开源、免费的操作系统，其稳定性、安全性、处理多并发已经得到业界的认可。目前很多企业记得项目都会部署到Linux&#x2F;Unix系统上。  Linux系统CPU利用率和负载CPU利用率现实的是程序在运行期间实时占用的CPU百分比；CPU使用率反映的是当前CPU的繁忙程度，忽高忽低的原因在于占用CPU处理事件的进程可能处于I&#x2F;O等待状态却还未释放进入wait。 CPU负载是指某段时间内占用">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://example.com/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/1403129_1584518601656_005L0VzSgy1g3a5m471hwj30jv05vwfq.jpg">
+<meta property="og:image" content="http://example.com/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/QQ%E6%88%AA%E5%9B%BE20210625224604.png">
 <meta property="article:published_time" content="2021-06-25T01:26:31.670Z">
 <meta property="article:modified_time" content="2021-06-25T01:26:31.670Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/1403129_1584518601656_005L0VzSgy1g3a5m471hwj30jv05vwfq.jpg">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
   
@@ -184,7 +189,173 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        
+        <blockquote>
+<p>Linux是一个开源、免费的操作系统，其稳定性、安全性、处理多并发已经得到业界的认可。目前很多企业记得项目都会部署到Linux/Unix系统上。</p>
+</blockquote>
+<h2 id="Linux系统"><a href="#Linux系统" class="headerlink" title="Linux系统"></a>Linux系统</h2><h3 id="CPU利用率和负载"><a href="#CPU利用率和负载" class="headerlink" title="CPU利用率和负载"></a>CPU利用率和负载</h3><p>CPU利用率现实的是程序在运行期间实时占用的CPU百分比；CPU使用率反映的是当前CPU的繁忙程度，忽高忽低的原因在于占用CPU处理事件的进程可能处于I/O等待状态却还未释放进入wait。</p>
+<p>CPU负载是指某段时间内占用CPU时间的进程和等待CPU时间的进程数，这里等待的进程是指等待被呼唤的进程，不包括处于wait状态进程。负载越小越好。</p>
+<p>CPU利用率高，并不意味着CPU的负载大。两者之间没有必然的关系。无论CPU的利用率是高是低，跟后面有多少任务在排队没有必然关系。负载表示的是”等待进程的平均数”。只有进程处于运行状态（running）和不可中断(interruptible)才会被加入到负载等待进程中，也就是下面这两种情况的进程才会表现为负载的值：</p>
+<ul>
+<li>即便需要立即使用CPU，也许还需要等待其他进程用完CPU</li>
+<li>即便需要继续处理，也必须等待磁盘输入输出完成才能进行</li>
+</ul>
+<h4 id="CPU使用率低负载高"><a href="#CPU使用率低负载高" class="headerlink" title="CPU使用率低负载高"></a>CPU使用率低负载高</h4><p>产生的原因就是：等待磁盘I/O完成的进程过多，导致进程队列过大，但是CPU运行的进程却很少，这样就体现到负载过大了，CPU使用率低。常见的场景如下：</p>
+<ul>
+<li>磁盘读写请求过多就会导致大量I/O等待</li>
+<li>MySQL中存在没有索引的语句或存在死锁等情况</li>
+<li>外接磁盘故障，常见有挂了NFS，但是NFS server故障</li>
+</ul>
+<h3 id="Linux中的负载及其查询"><a href="#Linux中的负载及其查询" class="headerlink" title="Linux中的负载及其查询"></a>Linux中的负载及其查询</h3><p>在linux下使用 <strong>top</strong>指令将会显示相关信息。load average：0.00，0.03, 0.00分别表示当前CPU在1分钟、5分钟和15分钟内的平均负载。这些数据来自文件 /proc/loadavg ,内核会负责统计出这些数据。top和uptime命令显示的内容就来自于这个文件，根据proc的帮助文件可知。这里的值就是单位时间内处于运行状态以及等待磁盘I/O状态的平均job数量。以单核CPU为例：</p>
+<ul>
+<li>小于1：说明平均每次只有不到一个job在忙，对于单核CPU来说，完全能处理过来</li>
+<li>等于1：说明平均每次刚好有一个job在忙，对于单核CPU来说，刚好能处理过来</li>
+<li>大于1：说明平均每次有多于一个job在忙，对于单核的CPU来说，由于一次只能处理一个任务，所以肯定有任务在等待，说明系统负载较大，调度不过来，有job需要等待。</li>
+</ul>
+<h3 id="内核态与用户态"><a href="#内核态与用户态" class="headerlink" title="内核态与用户态"></a>内核态与用户态</h3><p><img src="/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/1403129_1584518601656_005L0VzSgy1g3a5m471hwj30jv05vwfq.jpg"></p>
+<p>内核空间所占的3G~4G部分是共享的，是内核态的地址空间。这里存放整个内核的代码和所有的内核模块以及内核所维护的数据。</p>
+<h4 id="Linux特权级的理解"><a href="#Linux特权级的理解" class="headerlink" title="Linux特权级的理解"></a>Linux特权级的理解</h4><p>对于任何操作系统来说，创建一个进程是核心功能。创建进程要做很多工作，会消耗很多物理资源。比如分配物理内存，父子进程拷贝信息，拷贝设置页目录页等等，这些工作都由特定的进程去做，所以有了特权级别的概念。最关键的工作必须交给特权级别最高的进程去执行，这样就可以做到集中管理，减少有限资源的访问和使用冲突。inter x86构架的CPU一共四个级别，0~3级，0级特权级最高，3级特权级最低。</p>
+<h4 id="用户态和内核态是什么"><a href="#用户态和内核态是什么" class="headerlink" title="用户态和内核态是什么"></a>用户态和内核态是什么</h4><p>当一个进程在执行用户自己的代码时处于用户运行态（用户态）。此时特权级为3级，就是普通的用户进程运行的特权级，大部分用户直接面对的程序都是用户态。Ring3状态不能访问Ring0的地址空间，包括代码和数据。当一个进程因为系统调用 <strong>陷入内核代码</strong>中执行时处于内核运行态（内核态），此时特权级别为0级。执行的内核代码会使用当前进程的内核栈，每个进程都有自己的内核栈。</p>
+<p>用户运行一个程序，该程序创建的进程开始时运行自己的代码，处于用户态。如果要执行 <strong>文件操作、网络数据发送</strong>等操作必须通过write、send等系统调用，这些系统调用会调用内核的代码。进程会切换到Ring0，然后进入第3G-4G中的内核地址空间去执行内核代码来完成相应的操作。内核态的进程执行完后又会切换到Ring3，并回到用户态。这样，用户态的程序 <strong>就不能随意操作内核地址空间</strong>，具有一定的 <strong>安全保护</strong>作用。这说的保护模式是指通过内存页表操作等机制，保证进程间的地址不会相互冲突，一个进程的操作不会修改另一个进程地址空间的数据。</p>
+<p>当在系统中执行一个程序时，大部分时间是运行在用户态下的，在其需要操作系统帮助完成一些用户态自己没有特权和能力完成的操作时就会切换到内核态，比如：</p>
+<ul>
+<li><strong>系统调用</strong>  这是用户态进程主动要求切换到内核态的一种方式。用户进程通过系统调用申请使用操作系统提供的服务程序完成工作。例如fork()就是执行一个创建新进程的系统调用。系统调用的机制核心是使用了操作系统为用户特别开放的一个中断来实现的，如linux的int80h中断。</li>
+<li><strong>异常</strong>  当CPU在执行运行在用户态下的程序时，发生了一些没有预知的异常，这时会触发当前运行进程切换到处理此异常的内核相关进程中，也就是切换到了内核态，如缺页异常。</li>
+<li><strong>外围设备的中断</strong>  当外围设备完成用户请求的操作后，会向CPU发车型赢得中断信号，这还少CPU会暂停执行下一条即将要执行的指令而转到与中断信号对应的处理程序去执行，如果前面执行的指令是用户态下的程序，那么转换的莞城自然就会使由用户态到内核态到 切换，如硬盘读写操作完成，系统会切换到硬盘读写的中断处理程序中执行后边的操作等。</li>
+</ul>
+<h4 id="用户态和内核态的区别"><a href="#用户态和内核态的区别" class="headerlink" title="用户态和内核态的区别"></a>用户态和内核态的区别</h4><ul>
+<li>处于用户态执行时，进程所能访问的内存空间和对象受到限制，其所占有的处理机是可被抢占的。</li>
+<li>而处于内核态执行中的进程，则能访问所有的内存空间和对象，且所占的处理机是不允许被抢占的。</li>
+</ul>
+<h3 id="Linux文件系统"><a href="#Linux文件系统" class="headerlink" title="Linux文件系统"></a>Linux文件系统</h3><ul>
+<li><strong>/home</strong>  每个账户对应的文件夹，用于管理自己的数据</li>
+<li><strong>/user</strong>  主要包括系统的主要程序、安装的软件、图形接口所需要的文档、额外的库函数、共享目录和文件</li>
+<li><strong>/bin</strong>  存放客户自行文件</li>
+<li><strong>/boot</strong>  存放linux开机会用的文件</li>
+<li><strong>/dev</strong>  存放Linux的任何装置和接口设备文档</li>
+<li><strong>/etc</strong>  存放系统设定文档，如账户密码</li>
+<li><strong>/lib</strong>  系统使用的函数库放置的目录</li>
+<li><strong>/mnt</strong>  软盘和光盘预设挂载点的位置</li>
+<li><strong>/opt</strong>  主机额外安装软件所在的目录</li>
+<li><strong>/root</strong>  系统管理员的home</li>
+<li><strong>/sbin</strong>  只有系统管理员能使用的执行命令</li>
+<li><strong>/tmp</strong>  临时存放文件的路径</li>
+</ul>
+<h3 id="Linux中进程的状态"><a href="#Linux中进程的状态" class="headerlink" title="Linux中进程的状态"></a>Linux中进程的状态</h3><ul>
+<li>不可中断状态：进程处于睡眠状态，但是此刻进程是不可中断的。不可中断，指进程不响应异步信号</li>
+<li>暂停状态/跟踪状态 ：向进程发送一个SIGSTOP信号，它就会应响应该信号而进入TASK_STOPPED状态；当进程正在被跟踪时，它处于TASK_TRACED这个特殊的状态</li>
+<li>就绪状态：在run_queue队列里的状态</li>
+<li>运行状态：在run_queue队列里的状态</li>
+<li>可中断睡眠状态：处于这个状态的进程因为等待某某事件的发生（比如等待socket连接、等待信号量），而被挂起</li>
+<li>zombie状态（僵尸）：父亲没有通过wait系列的系统调用会顺便将子进程的尸体（task_struct）也释放掉</li>
+</ul>
+<h3 id="Linux命令"><a href="#Linux命令" class="headerlink" title="Linux命令"></a>Linux命令</h3><h4 id="查看线程-进程状态"><a href="#查看线程-进程状态" class="headerlink" title="查看线程/进程状态"></a>查看线程/进程状态</h4><ul>
+<li>ps -T -p <pid> 可查看由进程号为pid的<strong>进程</strong>创建的所有<strong>线程</strong></pid></li>
+<li>top -H 可实时显示各个<strong>线程</strong>情况</li>
+<li>pstree 以树状图显示进程</li>
+</ul>
+<h4 id="查看系统负载"><a href="#查看系统负载" class="headerlink" title="查看系统负载"></a>查看系统负载</h4><ul>
+<li>top</li>
+</ul>
+<p><img src="/2021/06/25/Linux%E7%B3%BB%E7%BB%9F%E5%8F%8A%E6%8C%87%E4%BB%A4/QQ%E6%88%AA%E5%9B%BE20210625224604.png"></p>
+<ul>
+<li><p>uptime</p>
+<figure class="highlight elm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># uptime</span><br><span class="line"><span class="number">02</span>:<span class="number">03</span>:<span class="number">50</span> up <span class="number">126</span> days, <span class="number">12</span>:<span class="number">57</span>, <span class="number">2</span> users, load average: <span class="number">0.08</span>, <span class="number">0.03</span>, <span class="number">0.05</span></span><br><span class="line"><span class="number">10</span>:<span class="number">19</span>:<span class="number">04</span> up <span class="number">257</span> days, <span class="number">18</span>:<span class="number">56</span>, <span class="number">12</span> users, load average: <span class="number">2.10</span>, <span class="number">2.10</span>,<span class="number">2.09</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>系统平均负载是指在特定时间间隔内运行队列中的平均进程数，如果你的 linux 主机是 1 个双核 CPU 的话，当 Load Average 为 6 的时候说明机器已经被充分使用了。1 可以被认为是最优的负载值。</p>
+<h4 id="统计文件行数的命令"><a href="#统计文件行数的命令" class="headerlink" title="统计文件行数的命令"></a>统计文件行数的命令</h4><p>wc命令 -c 统计字节数 -l 统计行数 -w 统计字数</p>
+<ul>
+<li>统计某个文件中，单词出现的行数：find ./linux.txt | xargs cat | grep “hello” |wc -l</li>
+</ul>
+<h4 id="统计文件数目的命令"><a href="#统计文件数目的命令" class="headerlink" title="统计文件数目的命令"></a>统计文件数目的命令</h4><ul>
+<li>统计文件夹下文件的个数：ls -l | grep “^-“ | wc -l</li>
+<li>统计文件夹下文件夹的个数：ls -l | grep “^d” |wc -l</li>
+<li>统计文件夹下文件个数，包括子文件：ls -lR | grep “^-“ | wc -l</li>
+<li>统计文件夹下目录个数，包括子目录：ls -IR | grep “^d” | wc -l</li>
+</ul>
+<h4 id="查看资源的命令"><a href="#查看资源的命令" class="headerlink" title="查看资源的命令"></a>查看资源的命令</h4><p>显示所有文件及目录(ls内定将文件名或目录名称开头为”.”的是为隐藏文件，不会列出)：ls -a</p>
+<p>除文件名称外，亦将文件型态、权限、拥有者、文件大小等咨询详细列出：ls -l</p>
+<p>将文件以相反次序显示列出：ls -r</p>
+<p>将文件依建立时间之先后次序列出：ls -t</p>
+<p>递归列出文件夹中的文件：ls -R</p>
+<h4 id="杀掉某个后台进程"><a href="#杀掉某个后台进程" class="headerlink" title="杀掉某个后台进程"></a>杀掉某个后台进程</h4><ul>
+<li>ps -ef |grep firefox;  kill -s 9 1827 ; 先查出Firefox的进程号，然后给进程发送信号</li>
+<li>ps -ef | grep firefox | grep -v grep | cut -c 9-15 | xargs kill -s 9 ; “grep firefox”的输出结果是，所有含有含有关键字“firefox”的进程；“grep -v grep”是在列出的进程中去除含有关键字“grep”的进程；“cut -c 9-15” 是截取输入行的第9个字符到第15个字符，而这正好是进程的PID;”xrags kill -s 9”中的xrags命令是用来把前面命令的输出结果(PID)作为“kill -s 9” 命令的参数，并执行该命令；“kill -s 9”会强行杀掉指定进程</li>
+<li>pkill -9 firefox</li>
+<li>killall -9 firefox</li>
+<li>kill -9 <pid></pid></li>
+</ul>
+<h4 id="查看网络状况"><a href="#查看网络状况" class="headerlink" title="查看网络状况"></a>查看网络状况</h4><ul>
+<li>查看Linux的端口使用情况：netstat -tln</li>
+<li>查看所有的服务端口：netstat -a</li>
+<li>只显示监听端口：natstat -l</li>
+</ul>
+<h4 id="在-user目录下找出大小超过10M的文件"><a href="#在-user目录下找出大小超过10M的文件" class="headerlink" title="在/user目录下找出大小超过10M的文件"></a>在/user目录下找出大小超过10M的文件</h4><p>find /user -size +10M</p>
+<h4 id="在-home目录下找出120天前被修改过的文件"><a href="#在-home目录下找出120天前被修改过的文件" class="headerlink" title="在/home目录下找出120天前被修改过的文件"></a>在/home目录下找出120天前被修改过的文件</h4><p>find /home -mtime +120</p>
+<h4 id="在-var目录下找出90天内未访问过的文件"><a href="#在-var目录下找出90天内未访问过的文件" class="headerlink" title="在/var目录下找出90天内未访问过的文件"></a>在/var目录下找出90天内未访问过的文件</h4><p>find /var \! -atime -90</p>
+<h4 id="检查Java进程是否存在"><a href="#检查Java进程是否存在" class="headerlink" title="检查Java进程是否存在"></a>检查Java进程是否存在</h4><p>ps -ef | grep java</p>
+<h4 id="常见的通配符"><a href="#常见的通配符" class="headerlink" title="常见的通配符"></a>常见的通配符</h4><ul>
+<li>？代表任意单个字符</li>
+<li>*代表任意多个字符</li>
+</ul>
+<h4 id="查看系统支持的所有信号"><a href="#查看系统支持的所有信号" class="headerlink" title="查看系统支持的所有信号"></a>查看系统支持的所有信号</h4><p>kill -l</p>
+<h4 id="top时，进程对应的状态及表示"><a href="#top时，进程对应的状态及表示" class="headerlink" title="top时，进程对应的状态及表示"></a>top时，进程对应的状态及表示</h4><ul>
+<li>D 不可中断 Uninterruptible（usually IO）</li>
+<li>R 正在运行，或在队列中的进程</li>
+<li>S 处于休眠状态</li>
+<li>T 停止或被追踪</li>
+<li>Z 僵尸进程</li>
+<li>W 进入内存 交换</li>
+<li>X 死掉的进程</li>
+</ul>
+<h4 id="在后台运行命令"><a href="#在后台运行命令" class="headerlink" title="在后台运行命令"></a>在后台运行命令</h4><p>一般都是使用 &amp; 在命令结尾来让程序自动运行。(命令后可以不追加空格)</p>
+<h4 id="grep命令"><a href="#grep命令" class="headerlink" title="grep命令"></a>grep命令</h4><p>Linux系统中grep命令是一种强大的文本搜索工具，它能使用正则表达式搜索文本，并把匹配的行打印出来。grep全称为 Global Regula Expression Print，表示全局正则表达式版本，它的的使用权限是所有用户。</p>
+<h4 id="文件系统"><a href="#文件系统" class="headerlink" title="文件系统"></a>文件系统</h4><ul>
+<li>查看挂载的文件系统：cat /proc/filesystems</li>
+<li>查看磁盘的使用情况：df -h</li>
+<li>查看文件夹的磁盘使用情况：du -a  //-a表示目录下每个文件所占的磁盘空间</li>
+<li>目录切换到根目录的命令：cd ~</li>
+<li>打印当前路径：pwd</li>
+<li>创建目录：mkdir</li>
+<li>删除目录：rmdir</li>
+<li>显示所有文件及目录：ls -a</li>
+<li>除文件名称外，亦将文件型态、权限、拥有者、文件大小等资讯详细列出来：ls -l</li>
+<li>将文件以相反次序显示：ls -r</li>
+<li>将文件以建立时间先后顺序列出：ls -t</li>
+<li>递归列出文件夹中的文件：ls -R</li>
+<li>文件复制：cp source dest</li>
+<li>文件夹复制：cp -r source dest</li>
+<li>删除文件：rm -rf file</li>
+<li>文件移动：mv dest source</li>
+<li>获取路径名：dirname file</li>
+<li>显示文件内容并注有行号：cat -n file</li>
+<li>显示文件的前n行或后n行：head -n  ;  tail  -n</li>
+<li>修改文件的时间（修改、访问、状态修改）：touch -d “10/13/2013”file</li>
+<li>查找文件位置：whereis file / locate file /find file</li>
+<li>比较两个文件的差异：diff -c file1 file2</li>
+<li>以并列的方式显示两个文件的差异：diff -y file1 file2</li>
+<li>建立文件的软连接：In file1 file2</li>
+<li>建立文件硬链接：In -s file1 file2</li>
+<li>修改文件拥有者：chown -R username  path</li>
+<li>修改权限 ：chmod {u|g|o|a}{+|-|=}{r|w|x} filename  //{用户、同组用户、其他用户、所有用户}{增加权限、去除权限、增加所有权限}{读、写、执行}</li>
+<li>统计文件字符：wc -c file //-l表示行数；-w表示单词数；-c表示字符数</li>
+</ul>
+<h4 id="系统"><a href="#系统" class="headerlink" title="系统"></a>系统</h4><ul>
+<li>查看用户标识：id username</li>
+<li>查看当前登录的用户：users</li>
+<li>查看都有哪些用户登录到机器上：who</li>
+<li>显示当前终端的用户名：whoami</li>
+<li><strong>显示进程</strong>：ps -ef   //-a显示<strong>所有进程</strong>的信息、-e显示<strong>当前运行</strong>的每一个进程的信息、-f显示一个完成列表、-x显示包括没有终端控制的进程状况</li>
+<li>杀掉进程：kill -9 <pid> //向指定pid的进程发送信号，终止进程</pid></li>
+<li>查看IP地址：ifconfig</li>
+<li>查看路由表：netstat</li>
+<li>查看历史输入的指令：history</li>
+<li>查看后台任务 job -l</li>
+</ul>
+<h4 id="日期"><a href="#日期" class="headerlink" title="日期"></a>日期</h4><ul>
+<li>显示日期：date</li>
+<li>显示日历 cal 3 2019</li>
+</ul>
+
       
 
       
@@ -285,7 +456,7 @@
                 </span>
                 <span class="tooltip-content">
                     <div class="toc-article">
-                    目录，不存在的…
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Linux%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.</span> <span class="toc-text">Linux系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU%E5%88%A9%E7%94%A8%E7%8E%87%E5%92%8C%E8%B4%9F%E8%BD%BD"><span class="toc-number">1.1.</span> <span class="toc-text">CPU利用率和负载</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#CPU%E4%BD%BF%E7%94%A8%E7%8E%87%E4%BD%8E%E8%B4%9F%E8%BD%BD%E9%AB%98"><span class="toc-number">1.1.1.</span> <span class="toc-text">CPU使用率低负载高</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E4%B8%AD%E7%9A%84%E8%B4%9F%E8%BD%BD%E5%8F%8A%E5%85%B6%E6%9F%A5%E8%AF%A2"><span class="toc-number">1.2.</span> <span class="toc-text">Linux中的负载及其查询</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E6%80%81%E4%B8%8E%E7%94%A8%E6%88%B7%E6%80%81"><span class="toc-number">1.3.</span> <span class="toc-text">内核态与用户态</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux%E7%89%B9%E6%9D%83%E7%BA%A7%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-number">1.3.1.</span> <span class="toc-text">Linux特权级的理解</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81%E5%92%8C%E5%86%85%E6%A0%B8%E6%80%81%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-number">1.3.2.</span> <span class="toc-text">用户态和内核态是什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81%E5%92%8C%E5%86%85%E6%A0%B8%E6%80%81%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">1.3.3.</span> <span class="toc-text">用户态和内核态的区别</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.4.</span> <span class="toc-text">Linux文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E4%B8%AD%E8%BF%9B%E7%A8%8B%E7%9A%84%E7%8A%B6%E6%80%81"><span class="toc-number">1.5.</span> <span class="toc-text">Linux中进程的状态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Linux%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.</span> <span class="toc-text">Linux命令</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BA%BF%E7%A8%8B-%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81"><span class="toc-number">1.6.1.</span> <span class="toc-text">查看线程&#x2F;进程状态</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E8%B4%9F%E8%BD%BD"><span class="toc-number">1.6.2.</span> <span class="toc-text">查看系统负载</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1%E6%96%87%E4%BB%B6%E8%A1%8C%E6%95%B0%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.3.</span> <span class="toc-text">统计文件行数的命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%9F%E8%AE%A1%E6%96%87%E4%BB%B6%E6%95%B0%E7%9B%AE%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.4.</span> <span class="toc-text">统计文件数目的命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E8%B5%84%E6%BA%90%E7%9A%84%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.5.</span> <span class="toc-text">查看资源的命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9D%80%E6%8E%89%E6%9F%90%E4%B8%AA%E5%90%8E%E5%8F%B0%E8%BF%9B%E7%A8%8B"><span class="toc-number">1.6.6.</span> <span class="toc-text">杀掉某个后台进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%BD%91%E7%BB%9C%E7%8A%B6%E5%86%B5"><span class="toc-number">1.6.7.</span> <span class="toc-text">查看网络状况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8-user%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%89%BE%E5%87%BA%E5%A4%A7%E5%B0%8F%E8%B6%85%E8%BF%8710M%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">1.6.8.</span> <span class="toc-text">在&#x2F;user目录下找出大小超过10M的文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8-home%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%89%BE%E5%87%BA120%E5%A4%A9%E5%89%8D%E8%A2%AB%E4%BF%AE%E6%94%B9%E8%BF%87%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">1.6.9.</span> <span class="toc-text">在&#x2F;home目录下找出120天前被修改过的文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8-var%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%89%BE%E5%87%BA90%E5%A4%A9%E5%86%85%E6%9C%AA%E8%AE%BF%E9%97%AE%E8%BF%87%E7%9A%84%E6%96%87%E4%BB%B6"><span class="toc-number">1.6.10.</span> <span class="toc-text">在&#x2F;var目录下找出90天内未访问过的文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5Java%E8%BF%9B%E7%A8%8B%E6%98%AF%E5%90%A6%E5%AD%98%E5%9C%A8"><span class="toc-number">1.6.11.</span> <span class="toc-text">检查Java进程是否存在</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E7%9A%84%E9%80%9A%E9%85%8D%E7%AC%A6"><span class="toc-number">1.6.12.</span> <span class="toc-text">常见的通配符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E7%B3%BB%E7%BB%9F%E6%94%AF%E6%8C%81%E7%9A%84%E6%89%80%E6%9C%89%E4%BF%A1%E5%8F%B7"><span class="toc-number">1.6.13.</span> <span class="toc-text">查看系统支持的所有信号</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#top%E6%97%B6%EF%BC%8C%E8%BF%9B%E7%A8%8B%E5%AF%B9%E5%BA%94%E7%9A%84%E7%8A%B6%E6%80%81%E5%8F%8A%E8%A1%A8%E7%A4%BA"><span class="toc-number">1.6.14.</span> <span class="toc-text">top时，进程对应的状态及表示</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8%E5%90%8E%E5%8F%B0%E8%BF%90%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.15.</span> <span class="toc-text">在后台运行命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#grep%E5%91%BD%E4%BB%A4"><span class="toc-number">1.6.16.</span> <span class="toc-text">grep命令</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.6.17.</span> <span class="toc-text">文件系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F"><span class="toc-number">1.6.18.</span> <span class="toc-text">系统</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A5%E6%9C%9F"><span class="toc-number">1.6.19.</span> <span class="toc-text">日期</span></a></li></ol></li></ol></li></ol>
                     </div>
                 </span>
             </div>
